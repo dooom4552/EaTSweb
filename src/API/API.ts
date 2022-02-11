@@ -1,8 +1,10 @@
-import { ResponseToken, ResponseTokenType } from "@/models/ResponseToken";
+import { IresponseToken } from "@/models/interfaces/IresponseToken";
+import { ResponseTokenType } from "@/models/ResponseToken";
 import { TodoItem, TodoItemType } from "@/models/TodoItem";
+import { User } from "@/models/User";
 import axios from "axios";
 const http = axios.create({
-  baseURL: "https://localhost:44330",
+  baseURL: "https://localhost:44385",
 });
 
 http.interceptors.response.use(
@@ -16,7 +18,7 @@ http.interceptors.response.use(
         if (!parseResult) return;
         const currentResponseTokenType: ResponseTokenType =
           JSON.parse(parseResult);
-        const currentResponseToken: ResponseToken | undefined =
+        const currentResponseToken: { accessToken: string; currentUser: User } =
           await getTokenByUsernameAndPassword(
             currentResponseTokenType.username,
             currentResponseTokenType.password
@@ -40,7 +42,7 @@ http.interceptors.response.use(
 export const getTokenByUsernameAndPassword = async (
   username: string,
   password: string
-): Promise<ResponseToken | undefined> => {
+) => {
   try {
     const { data } = await http({
       url: "token",
@@ -53,14 +55,18 @@ export const getTokenByUsernameAndPassword = async (
         password,
       },
     });
-    const responseToken: ResponseToken = data;
-    return responseToken;
+    const responseToken: IresponseToken = data;
+    const { accessToken, user } = responseToken;
+    const currentUser = new User(user);
+    const response = { accessToken, currentUser };
+    return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.log(error);
     } else {
       console.log(error);
     }
+    throw error;
   }
 };
 

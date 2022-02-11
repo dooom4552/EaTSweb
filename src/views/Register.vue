@@ -1,8 +1,9 @@
 <script lang="ts">
-import router from "@/router";
+//import router from "@/router";
+import { User } from "@/models/User";
 import Vue from "vue";
 import Component from "vue-class-component";
-import { getTokenByUsernameAndPassword } from "../API/API";
+//import { getTokenByUsernameAndPassword } from "../API/API";
 
 @Component({})
 export default class Register extends Vue {
@@ -10,13 +11,13 @@ export default class Register extends Vue {
   password: string = "";
 
   async getToken() {
-    const responseToken = await getTokenByUsernameAndPassword(
-      this.login,
-      this.password
-    );
-    if (responseToken) {
-      window.localStorage.setItem("token", JSON.stringify(responseToken));
-      router.push("/");
+    const payload = {
+      login: this.login,
+      password: this.password,
+    };
+    const user = (await this.$store.dispatch("initUser", payload)) as User;
+    if (user) {
+      this.$router.push("/");
     }
   }
 }

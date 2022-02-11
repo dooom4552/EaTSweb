@@ -1,19 +1,30 @@
 <script lang="ts">
 import { TodoItem } from "@/models/TodoItem";
 import router from "@/router";
-import Vue from "vue";
-import Component from "vue-class-component";
+import { Component, Prop, Watch, Vue } from "vue-property-decorator";
 import { getLogin, getList, addItem, changeItem, deleteItem } from "../API/API";
 import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
 
 @Component({})
 export default class Main extends Vue {
+  @Prop({ default: "Input Property" })
+  exampleProperty!: string;
   login: string = "";
   list: TodoItem[] = [];
   nameTodo: string = "";
   connection: HubConnection = new HubConnectionBuilder()
     .withUrl("https://localhost:44330/chat")
     .build();
+  myWatchedProperty: string = "Watched Property";
+  get myComputedProp() {
+    return Math.random();
+  }
+  @Watch("myWatchedProperty")
+  onPropertyChanged(value: string, oldValue: string) {
+    console.log(value);
+    console.log(oldValue);
+    this.myWatchedProperty = "Watched Property Changed";
+  }
   async mounted() {
     this.login = await getLogin();
     this.list = await getList();
@@ -73,7 +84,6 @@ export default class Main extends Vue {
           ></v-text-field>
           <v-btn type="submit" :disabled="!nameTodo">add</v-btn>
         </v-form>
-
         <v-list-item-group color="primary">
           <v-list-item v-for="(item, i) in list" :key="i">
             <template>

@@ -1,6 +1,7 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
 import Main from "../views/Main.vue";
+//import Test from "../views/Test.vue";
 
 Vue.use(VueRouter);
 
@@ -26,6 +27,7 @@ const router = new VueRouter({
   routes,
 });
 router.beforeEach((routeTo, routeFrom, next) => {
+  // console.log(Test);
   const authRequired = routeTo.matched.some((route) => route.meta.authRequired);
   if (!authRequired) {
     if (!window.localStorage.getItem("token")) {
