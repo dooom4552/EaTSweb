@@ -1,7 +1,6 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
-import Main from "../views/Main.vue";
-//import Test from "../views/Test.vue";
+import WrapperMain from "../views/WrapperMain.vue";
 
 Vue.use(VueRouter);
 
@@ -12,7 +11,7 @@ const routes: Array<RouteConfig> = [
     meta: {
       authRequired: true,
     },
-    component: Main,
+    component: WrapperMain,
   },
   {
     path: "/register",

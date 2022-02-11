@@ -1,3 +1,4 @@
+import { AgencyResponse, AgencyType } from "@/models/AgencyType";
 import { IresponseToken } from "@/models/interfaces/IresponseToken";
 import { ResponseTokenType } from "@/models/ResponseToken";
 import { TodoItem, TodoItemType } from "@/models/TodoItem";
@@ -70,7 +71,36 @@ export const getTokenByUsernameAndPassword = async (
   }
 };
 
-export const getRole = async (): Promise<string | undefined> => {
+export const AgencyGetAll = async () => {
+  try {
+    const parseResult = window.localStorage.getItem("token");
+    if (!parseResult) throw new Error("no parseResult");
+    const currentResponseTokenType: ResponseTokenType = JSON.parse(parseResult);
+
+    const { data } = await http({
+      url: "/AgencyType/GetAll",
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + currentResponseTokenType.accessToken,
+      },
+    });
+    const response: AgencyResponse[] = data;
+    const res = response.map(
+      (AgencyResponse) => new AgencyType(AgencyResponse)
+    );
+    return res;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.log(error);
+    } else {
+      console.log(error);
+    }
+    throw error;
+  }
+};
+
+export const getRole = async () => {
   try {
     const parseResult = window.localStorage.getItem("token");
     if (!parseResult) return;
@@ -92,6 +122,7 @@ export const getRole = async (): Promise<string | undefined> => {
     } else {
       console.log(error);
     }
+    throw error;
   }
 };
 export const getLogin = async (): Promise<string> => {
