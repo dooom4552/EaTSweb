@@ -27,8 +27,8 @@ export default class WrapperMain extends Vue {
 }
 </script>
 <template>
-  <div>
-    <v-app-bar color="blue" elevation="4">
+  <div v-if="AccountInfo">
+    <v-app-bar v-if="false" color="blue" elevation="4">
       <v-spacer />
 
       <v-btn @click="logout">logout</v-btn>

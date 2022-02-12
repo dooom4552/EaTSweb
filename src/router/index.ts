@@ -1,6 +1,7 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
 import WrapperMain from "../views/WrapperMain.vue";
+import store from "../store/index";
 
 Vue.use(VueRouter);
 
@@ -18,6 +19,16 @@ const routes: Array<RouteConfig> = [
     name: "Register",
 
     component: () => import("../views/Register.vue"),
+  },
+  {
+    path: "/logout",
+    name: "logout",
+    meta: { authRequired: true },
+    beforeEnter: (to: any, from: any, next: any) => {
+      store.dispatch("logOut").then(() => {
+        next({ name: "Register" });
+      });
+    },
   },
 ];
 

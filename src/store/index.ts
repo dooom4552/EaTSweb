@@ -37,6 +37,13 @@ const store = new Vuex.Store({
       commit("SET_CURRENT_TOKEN", response.accessToken);
       return response.currentUser;
     },
+    async logOut({ commit }) {
+      commit("SET_CURRENT_USER", null);
+      commit("SET_CURRENT_TOKEN", null);
+      window.localStorage.removeItem("token");
+      window.localStorage.removeItem("currentUser");
+      return true;
+    },
   },
 });
 
