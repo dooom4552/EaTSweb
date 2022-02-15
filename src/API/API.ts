@@ -1,11 +1,12 @@
-import { AgencyResponse, AgencyType } from "@/models/AgencyType";
+import { AgencyTypeResponse, AgencyType } from "@/models/AgencyType";
+import { AgencyVM, AgencyVMResponse } from "@/models/AgencyVM";
 import { IresponseToken } from "@/models/interfaces/IresponseToken";
 import { ResponseTokenType } from "@/models/ResponseToken";
 import { TodoItem, TodoItemType } from "@/models/TodoItem";
 import { User } from "@/models/User";
 import axios from "axios";
 const http = axios.create({
-  baseURL: "https://localhost:44385",
+  baseURL: "https://localhost:7035",
 });
 
 http.interceptors.response.use(
@@ -14,21 +15,21 @@ http.interceptors.response.use(
     console.log(error);
     if (error.response && error.response.status) {
       if (error.response.status === 401) {
-        console.log(error.response.status);
         const parseResult = window.localStorage.getItem("token");
-        if (!parseResult) return;
-        const currentResponseTokenType: ResponseTokenType =
-          JSON.parse(parseResult);
+        if (!parseResult) throw new Error("no parseResult");
+        const parseCurrentUserJSON = window.localStorage.getItem("currentUser");
+        if (!parseCurrentUserJSON) throw new Error("no parseResult");
+        const currentUser: User = JSON.parse(parseCurrentUserJSON);
         const currentResponseToken: { accessToken: string; currentUser: User } =
           await getTokenByUsernameAndPassword(
-            currentResponseTokenType.username,
-            currentResponseTokenType.password
+            currentUser.login,
+            currentUser.password
           );
         if (!currentResponseToken) return;
 
         window.localStorage.setItem(
           "token",
-          JSON.stringify(currentResponseToken)
+          JSON.stringify(currentResponseToken.accessToken)
         );
         error.config.headers["Authorization"] =
           "Bearer " + currentResponseToken.accessToken;
@@ -46,7 +47,7 @@ export const getTokenByUsernameAndPassword = async (
 ) => {
   try {
     const { data } = await http({
-      url: "token",
+      url: "Account/GetToken",
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -75,17 +76,15 @@ export const AgencyGetAll = async () => {
   try {
     const parseResult = window.localStorage.getItem("token");
     if (!parseResult) throw new Error("no parseResult");
-    const currentResponseTokenType: ResponseTokenType = JSON.parse(parseResult);
-
     const { data } = await http({
-      url: "/AgencyType/GetAll",
+      url: "AgencyTypes",
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + currentResponseTokenType.accessToken,
+        Authorization: "Bearer " + JSON.parse(parseResult),
       },
     });
-    const response: AgencyResponse[] = data;
+    const response: AgencyTypeResponse[] = data;
     const res = response.map(
       (AgencyResponse) => new AgencyType(AgencyResponse)
     );
@@ -100,22 +99,26 @@ export const AgencyGetAll = async () => {
   }
 };
 
-export const getRole = async () => {
+export const AgencyTypeCreate = async (agencyType: AgencyType) => {
   try {
     const parseResult = window.localStorage.getItem("token");
-    if (!parseResult) return;
-    const currentResponseTokenType: ResponseTokenType = JSON.parse(parseResult);
-    console.log(currentResponseTokenType.accessToken);
+    if (!parseResult) throw new Error("no parseResult");
+    const currentResponseTokenType: string = JSON.parse(parseResult);
+
     const { data } = await http({
-      url: "/api/values/getrole",
-      method: "GET",
+      url: "AgencyTypes/Create",
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + currentResponseTokenType.accessToken,
+        Authorization: "Bearer " + currentResponseTokenType,
+      },
+      data: {
+        Name: agencyType.name,
+        ShortName: agencyType.shortName,
       },
     });
-    const result: string = data;
-    return result;
+    const response: AgencyTypeResponse = data;
+    return new AgencyType(response);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.log(error);
@@ -125,6 +128,59 @@ export const getRole = async () => {
     throw error;
   }
 };
+export const AgencyCreate = async (agencyVM: AgencyVM) => {
+  try {
+    const parseResult = window.localStorage.getItem("token");
+    if (!parseResult) throw new Error("no parseResult");
+    const currentResponseTokenType: string = JSON.parse(parseResult);
+
+    const { data } = await http({
+      url: "Agencyes/Create",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + currentResponseTokenType,
+      },
+      data: agencyVM,
+    });
+    const response: AgencyVMResponse = data;
+    return new AgencyVM(response);
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.log(error);
+    } else {
+      console.log(error);
+    }
+    throw error;
+  }
+};
+export const AgencyDelete = async (agencyVM: AgencyVM) => {
+  try {
+    const parseResult = window.localStorage.getItem("token");
+    if (!parseResult) throw new Error("no parseResult");
+    const currentResponseTokenType: string = JSON.parse(parseResult);
+
+    const { data } = await http({
+      url: "Agencyes/Delete",
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + currentResponseTokenType,
+      },
+      data: agencyVM,
+    });
+    const response: AgencyVMResponse = data;
+    return new AgencyVM(response);
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.log(error);
+    } else {
+      console.log(error);
+    }
+    throw error;
+  }
+};
+
 export const getLogin = async (): Promise<string> => {
   try {
     const parseResult = window.localStorage.getItem("token");
@@ -151,35 +207,7 @@ export const getLogin = async (): Promise<string> => {
     return "";
   }
 };
-export const getList = async (): Promise<TodoItem[]> => {
-  try {
-    const parseResult = window.localStorage.getItem("token");
-    if (!parseResult) return [];
 
-    const currentResponseTokenType: ResponseTokenType = JSON.parse(parseResult);
-
-    const { data } = await http({
-      url: "/api/values/getlist",
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + currentResponseTokenType.accessToken,
-      },
-    });
-    const resulTtypes: TodoItemType[] = data;
-    const results: TodoItem[] = resulTtypes.map(
-      (resulTtype) => new TodoItem(resulTtype)
-    );
-    return results;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.log(error);
-    } else {
-      console.log(error);
-    }
-    return [];
-  }
-};
 export const addItem = async (TaskDescription: string) => {
   try {
     const parseResult = window.localStorage.getItem("token");

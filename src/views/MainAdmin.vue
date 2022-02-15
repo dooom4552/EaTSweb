@@ -2,6 +2,9 @@
 import { Component, Vue } from "vue-property-decorator";
 import AgencyList from "./AgencyList.vue";
 import { mapGetters } from "vuex";
+import { AgencyGetAll } from "@/API/API";
+import { AgencyType } from "@/models/AgencyType";
+import { AgencyVM } from "@/models/AgencyVM";
 
 @Component({
   components: { AgencyList },
@@ -12,19 +15,41 @@ import { mapGetters } from "vuex";
     ]),
   },
 })
-export default class MainUser extends Vue {
+export default class MainAdmin extends Vue {
   items: any[] = [
     { name: "Пользователи" },
     { name: "Учреждения" },
     { name: "Мероприятия" },
   ];
   tab: any = null;
-  text: string =
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
-  // @Watch("group")
-  // onPropertyChanged(value: string, oldValue: string) {
+  currentAgencyTypes: AgencyType[] = [];
+  currentAgencyType: AgencyType = new AgencyType({
+    id: 0,
+    name: "ggg",
+    shortName: "jj",
+    agencies: [],
+  });
+  btns: string[] = ["Пользователи", "Учреждения", "Мероприятия"];
+  colors: string[] = ["cyan", "cyan", "cyan"];
+  items1: any = [...Array(4)].map((_, i) => `Item ${i}`);
 
-  // }
+  async created() {
+    this.currentAgencyTypes = await AgencyGetAll();
+    this.currentAgencyType = this.currentAgencyTypes[0];
+  }
+  setCurrentAgencyType(agencyType: AgencyType) {
+    this.tab = 1;
+    this.currentAgencyType = agencyType;
+  }
+  AgencyCreate(agencyVM: AgencyVM) {
+    this.currentAgencyType.agencies.push(agencyVM);
+  }
+  AgencyDelete(agencyVM: AgencyVM) {
+    const indexDeleteAgencyVM = this.currentAgencyType.agencies.findIndex(
+      (ag) => ag.id === agencyVM.id
+    );
+    this.currentAgencyType.agencies.splice(indexDeleteAgencyVM, 1);
+  }
 }
 </script>
 <template>
@@ -38,27 +63,41 @@ export default class MainUser extends Vue {
               AccountInfo.login
             }}</v-avatar>
           </v-col>
+          <v-col>
+            <v-toolbar-title>Админ панель</v-toolbar-title>
+          </v-col>
+          <v-menu v-for="(nameBtn, index) in btns" :key="index" offset-y>
+            <template v-slot:activator="{ attrs, on }">
+              <v-btn
+                :color="colors[index]"
+                class="white--text ma-5"
+                :attrs="attrs"
+                v-on="on"
+              >
+                {{ nameBtn }}
+              </v-btn>
+            </template>
 
-          <v-toolbar-title>Админ панель</v-toolbar-title>
-
+            <v-list v-if="nameBtn === 'Учреждения'">
+              <v-list-item
+                v-for="(agencyType, index) in currentAgencyTypes"
+                :key="index"
+                link
+                @click="setCurrentAgencyType(agencyType)"
+              >
+                <v-list-item-title
+                  v-text="agencyType.shortName"
+                ></v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
           <v-spacer></v-spacer>
-
           <v-btn icon>
             <v-icon>mdi-magnify</v-icon>
           </v-btn>
           <v-btn href="logout" icon>
             <v-icon>mdi-logout</v-icon>
           </v-btn>
-
-          <template v-slot:extension>
-            <v-tabs v-model="tab" align-with-title>
-              <v-tabs-slider color="yellow"></v-tabs-slider>
-
-              <v-tab v-for="(item, index) in items" :key="index">
-                {{ item.name }}
-              </v-tab>
-            </v-tabs>
-          </template>
         </v-toolbar>
 
         <v-tabs-items v-model="tab">
@@ -69,6 +108,10 @@ export default class MainUser extends Vue {
               }}</v-card>
               <v-card v-else-if="item.name === 'Учреждения'"
                 ><AgencyList
+                  v-if="currentAgencyTypes"
+                  :currentAgencyType="currentAgencyType"
+                  @AgencyCreate="AgencyCreate"
+                  @AgencyDelete="AgencyDelete"
               /></v-card>
               <v-card v-else-if="item.name === 'Мероприятия'">{{
                 item.name
