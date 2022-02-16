@@ -31,11 +31,22 @@ export default class MainAdmin extends Vue {
   });
   btns: string[] = ["Пользователи", "Учреждения", "Мероприятия"];
   colors: string[] = ["cyan", "cyan", "cyan"];
+  loading: boolean[] = [false, false, false];
   items1: any = [...Array(4)].map((_, i) => `Item ${i}`);
-
+  $notification: any;
   async created() {
-    this.currentAgencyTypes = await AgencyGetAll();
-    this.currentAgencyType = this.currentAgencyTypes[0];
+    try {
+      this.loading[1] = true;
+      this.currentAgencyTypes = await AgencyGetAll();
+      this.currentAgencyType = this.currentAgencyTypes[0];
+    } catch (error) {
+      this.$notification.error(error, {
+        timer: 4,
+        position: "bottomRight",
+      });
+    } finally {
+      this.loading[1] = false;
+    }
   }
   setCurrentAgencyType(agencyType: AgencyType) {
     this.tab = 1;
@@ -43,6 +54,13 @@ export default class MainAdmin extends Vue {
   }
   AgencyCreate(agencyVM: AgencyVM) {
     this.currentAgencyType.agencies.push(agencyVM);
+  }
+  AgencyUpdate(agencyVM: AgencyVM) {
+    const updatingAgencyVM = this.currentAgencyType.agencies.find(
+      (ag) => ag.id === agencyVM.id
+    );
+    if (!updatingAgencyVM) throw Error("Не найдено учреждение");
+    Object.assign(updatingAgencyVM, agencyVM);
   }
   AgencyDelete(agencyVM: AgencyVM) {
     const indexDeleteAgencyVM = this.currentAgencyType.agencies.findIndex(
@@ -69,6 +87,7 @@ export default class MainAdmin extends Vue {
           <v-menu v-for="(nameBtn, index) in btns" :key="index" offset-y>
             <template v-slot:activator="{ attrs, on }">
               <v-btn
+                :loading="loading[index]"
                 :color="colors[index]"
                 class="white--text ma-5"
                 :attrs="attrs"
@@ -112,6 +131,7 @@ export default class MainAdmin extends Vue {
                   :currentAgencyType="currentAgencyType"
                   @AgencyCreate="AgencyCreate"
                   @AgencyDelete="AgencyDelete"
+                  @AgencyUpdate="AgencyUpdate"
               /></v-card>
               <v-card v-else-if="item.name === 'Мероприятия'">{{
                 item.name

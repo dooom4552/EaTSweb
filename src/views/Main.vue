@@ -2,7 +2,6 @@
 import { TodoItem } from "@/models/TodoItem";
 import router from "@/router";
 import { Component, Prop, Watch, Vue } from "vue-property-decorator";
-import { getLogin, getList, addItem, changeItem, deleteItem } from "../API/API";
 import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
 
 @Component({})
@@ -26,9 +25,6 @@ export default class Main extends Vue {
     this.myWatchedProperty = "Watched Property Changed";
   }
   async mounted() {
-    this.login = await getLogin();
-    this.list = await getList();
-
     this.connection.start().then(() => this.connection.invoke("send", "Hello"));
     this.connection.on("send", (data) => {
       console.log(data);
@@ -36,27 +32,19 @@ export default class Main extends Vue {
     });
   }
   async update() {
-    this.list = await getList();
     console.log("object");
   }
-  async submit(nameTodo: string): Promise<void> {
-    const todoItem: TodoItem | undefined = await addItem(nameTodo);
-    this.nameTodo = "";
-    if (!todoItem) return;
-    this.list.push(todoItem);
-    this.connection.invoke("send", "Hello");
-  }
-  async changeItem(item: TodoItem) {
-    const citem = await changeItem(item);
-    this.connection.invoke("send", "Hello");
-    console.log(citem);
-  }
+  // async submit(nameTodo: string): Promise<void> {
+  //   // const todoItem: TodoItem | undefined = await addItem(nameTodo);
+  //   // this.nameTodo = "";
+  //   // if (!todoItem) return;
+  //   // this.list.push(todoItem);
+  //   // this.connection.invoke("send", "Hello");
+  // }
+
   async deleteItem(item: TodoItem) {
-    const result = await deleteItem(item);
-    if (!result) return;
     this.list = this.list.filter((todoItem) => todoItem !== item);
     this.connection.invoke("send", "Hello");
-    console.log(result);
   }
   logout(): void {
     window.localStorage.removeItem("token");

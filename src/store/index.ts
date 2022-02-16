@@ -26,6 +26,9 @@ const store = new Vuex.Store({
     AccountInfo(state) {
       return state.currentUser;
     },
+    getToken(state) {
+      return state.token;
+    },
   },
   actions: {
     async initUser({ commit }, payload: { login: string; password: string }) {
