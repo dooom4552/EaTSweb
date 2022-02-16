@@ -1,4 +1,4 @@
-# vuejws2
+# EaTSweb
 
 ## Project setup
 ```
