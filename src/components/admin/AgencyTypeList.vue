@@ -1,51 +1,35 @@
 <script lang="ts">
-import { AgencyType } from "@/models/AgencyType";
-import { AgencyVM, AgencyVMResponse } from "@/models/AgencyVM";
+import { AgencyTypeCreate, AgencyTypeDelete } from "@/API/API";
+import { AgencyType, AgencyTypeResponse } from "@/models/AgencyType";
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { AgencyCreate, AgencyDelete, AgencyUpdate } from "../API/API";
 
 @Component({})
-export default class AgencyList extends Vue {
-  @Prop(AgencyType)
-  readonly currentAgencyType!: AgencyType;
+export default class AgencyTypeList extends Vue {
+  @Prop()
+  readonly currentAgencyTypes!: AgencyType[];
 
   ///data
   dialog: boolean = false;
   dialogUdate: boolean = false;
-  AgencyShortName: string = "";
-  AgencyName: string = "";
-  currentAgencyVM: AgencyVM = this.currentAgencyType.agencies[0];
+  AgencyTypeShortName: string = "";
+  AgencyTypeName: string = "";
   $notification: any;
-
+  currentAgencyType: AgencyType = this.currentAgencyTypes[0];
   ///methods
-  async AgencyAdd() {
+  async AgencyTypeAdd() {
     try {
-      const parameters: AgencyVMResponse = {
+      const parameters: AgencyTypeResponse = {
         id: 0,
-        name: this.AgencyName,
-        shortName: this.AgencyShortName,
-        agencyTypeId: this.currentAgencyType?.id,
-        displayOrder: 0,
+        name: this.AgencyTypeName,
+        shortName: this.AgencyTypeShortName,
+        agencies: [],
       };
-      let agency = new AgencyVM(parameters);
+      let agencyType = new AgencyType(parameters);
       this.dialog = false;
-      const resultAgency = await AgencyCreate(agency);
-      this.$emit("AgencyCreate", resultAgency);
-      this.AgencyName = "";
-      this.AgencyShortName = "";
-    } catch (error) {
-      this.$notification.error(error, {
-        timer: 4,
-        position: "bottomRight",
-      });
-    }
-  }
-  setCurrentAgencyVM(agencyVM: AgencyVM) {
-    try {
-      this.currentAgencyVM = agencyVM;
-      this.dialogUdate = true;
-      this.AgencyShortName = agencyVM.shortName;
-      this.AgencyName = agencyVM.name;
+      const resultAgencyType = await AgencyTypeCreate(agencyType);
+      this.$emit("AgencyTypeCreate", resultAgencyType);
+      this.AgencyTypeName = "";
+      this.AgencyTypeShortName = "";
     } catch (error) {
       this.$notification.error(error, {
         timer: 10,
@@ -53,19 +37,18 @@ export default class AgencyList extends Vue {
       });
     }
   }
-  async AgencyUpdate() {
+  async AgencyTypeUpdate() {
     try {
-      if (this.currentAgencyVM) {
-        const params: AgencyVMResponse = {
-          name: this.AgencyName,
-          shortName: this.AgencyShortName,
-          agencyTypeId: this.currentAgencyVM.agencyTypeId,
-          displayOrder: this.currentAgencyVM.displayOrder,
-          id: this.currentAgencyVM.id,
+      if (this.currentAgencyType) {
+        const params: AgencyTypeResponse = {
+          id: this.currentAgencyType.id,
+          name: this.AgencyTypeName,
+          shortName: this.AgencyTypeShortName,
+          agencies: this.currentAgencyType.agencies,
         };
-        const updatingAgency = new AgencyVM(params);
-        const resultAgency = await AgencyUpdate(updatingAgency);
-        this.$emit("AgencyUpdate", resultAgency);
+        const updatingAgency = new AgencyType(params);
+        const resultAgency = await AgencyTypeCreate(updatingAgency);
+        this.$emit("AgencyTypeUpdate", resultAgency);
       }
     } catch (error) {
       this.$notification.error(error, {
@@ -74,16 +57,16 @@ export default class AgencyList extends Vue {
       });
     } finally {
       this.dialogUdate = false;
-      this.AgencyName = "";
-      this.AgencyShortName = "";
+      this.AgencyTypeName = "";
+      this.AgencyTypeShortName = "";
     }
   }
-  async AgencyDelete(agencyVM: AgencyVM) {
+  setCurrentAgencyType(agencyType: AgencyType) {
     try {
-      agencyVM.name = "loading";
-      await AgencyDelete(agencyVM);
-      agencyVM.name = "";
-      this.$emit("AgencyDelete", agencyVM);
+      this.currentAgencyType = agencyType;
+      this.dialogUdate = true;
+      this.AgencyTypeShortName = agencyType.shortName;
+      this.AgencyTypeShortName = agencyType.name;
     } catch (error) {
       this.$notification.error(error, {
         timer: 10,
@@ -91,30 +74,41 @@ export default class AgencyList extends Vue {
       });
     }
   }
+  async AgencyTypeDelete(agencyType: AgencyType) {
+    try {
+      agencyType.name = "loading";
+      await AgencyTypeDelete(agencyType);
+      agencyType.name = "";
+      this.$emit("AgencyTypeDelete", agencyType);
+    } catch (error) {
+      this.$notification.error(error, {
+        timer: 4,
+        position: "bottomRight",
+      });
+    }
+  }
 }
 </script>
 <template>
-  <div v-if="currentAgencyType">
+  <div v-if="currentAgencyTypes">
     <v-container>
       <v-row class="mb-4 mt-4" justify="center">
         <v-dialog v-model="dialog" persistent max-width="600px">
           <template v-slot:activator="{ on, attrs }">
             <v-btn color="primary" dark v-bind="attrs" v-on="on">
-              Добавить учреждение
+              Добавить новый тип учреждения
             </v-btn>
           </template>
           <v-card>
             <v-card-title>
-              <span class="text-h5"
-                >Добавление {{ currentAgencyType.name }}</span
-              >
+              <span class="text-h5">Добавление типа учреждения</span>
             </v-card-title>
             <v-card-text>
               <v-container>
                 <v-row>
                   <v-col cols="12">
                     <v-text-field
-                      v-model="AgencyShortName"
+                      v-model="AgencyTypeShortName"
                       label="Короткое название"
                       type="text"
                       required
@@ -122,7 +116,7 @@ export default class AgencyList extends Vue {
                   </v-col>
                   <v-col cols="12">
                     <v-text-field
-                      v-model="AgencyName"
+                      v-model="AgencyTypeName"
                       label="Название*"
                       type="text"
                       required
@@ -130,7 +124,6 @@ export default class AgencyList extends Vue {
                   </v-col>
                 </v-row>
               </v-container>
-              <small>*indicates required field</small>
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -138,10 +131,10 @@ export default class AgencyList extends Vue {
                 Закрыть
               </v-btn>
               <v-btn
-                :disabled="!AgencyName || !AgencyShortName"
+                :disabled="!AgencyTypeName || !AgencyTypeShortName"
                 color="blue darken-1"
                 text
-                @click="AgencyAdd"
+                @click="AgencyTypeAdd"
               >
                 Добавить
               </v-btn>
@@ -151,14 +144,16 @@ export default class AgencyList extends Vue {
         <v-dialog v-model="dialogUdate" persistent max-width="600px">
           <v-card>
             <v-card-title>
-              <span class="text-h5">Изменение {{ currentAgencyVM.name }}</span>
+              <span class="text-h5"
+                >Изменение {{ currentAgencyType.name }}</span
+              >
             </v-card-title>
             <v-card-text>
               <v-container>
                 <v-row>
                   <v-col cols="12">
                     <v-text-field
-                      v-model="AgencyShortName"
+                      v-model="AgencyTypeShortName"
                       label="Короткое название"
                       type="text"
                       required
@@ -166,7 +161,7 @@ export default class AgencyList extends Vue {
                   </v-col>
                   <v-col cols="12">
                     <v-text-field
-                      v-model="AgencyName"
+                      v-model="AgencyTypeName"
                       label="Название*"
                       type="text"
                       required
@@ -181,10 +176,10 @@ export default class AgencyList extends Vue {
                 Закрыть
               </v-btn>
               <v-btn
-                :disabled="!AgencyName || !AgencyShortName"
+                :disabled="!AgencyTypeName || !AgencyTypeShortName"
                 color="blue darken-1"
                 text
-                @click="AgencyUpdate"
+                @click="AgencyTypeUpdate"
               >
                 Изменить
               </v-btn>
@@ -193,18 +188,14 @@ export default class AgencyList extends Vue {
         </v-dialog>
       </v-row>
       <v-list>
-        <v-subheader>{{ currentAgencyType.name }}</v-subheader>
         <v-list-item-group color="primary">
-          <v-list-item
-            v-for="(agencyVM, i) in currentAgencyType.agencies"
-            :key="i"
-          >
+          <v-list-item v-for="(agencyType, i) in currentAgencyTypes" :key="i">
             <template>
               <v-list-item-content>
                 <v-list-item-subtitle>
                   <v-list-item>
                     <v-list-item-content>
-                      {{ agencyVM.name }}
+                      {{ agencyType.name }}
                     </v-list-item-content>
                   </v-list-item>
                 </v-list-item-subtitle>
@@ -213,17 +204,17 @@ export default class AgencyList extends Vue {
                 class="mr-3"
                 color="primary"
                 dark
-                :disabled="agencyVM.name === 'loading'"
-                @click="setCurrentAgencyVM(agencyVM)"
+                :disabled="agencyType.name === 'loading'"
+                @click="setCurrentAgencyType(agencyType)"
               >
                 изменить
               </v-btn>
               <v-btn
-                :loading="agencyVM.name === 'loading'"
-                :disabled="agencyVM.name === 'loading'"
+                :loading="agencyType.name === 'loading'"
+                :disabled="agencyType.name === 'loading'"
                 dark
                 color="error"
-                @click="AgencyDelete(agencyVM)"
+                @click="AgencyTypeDelete(agencyType)"
                 >удалить</v-btn
               >
             </template>

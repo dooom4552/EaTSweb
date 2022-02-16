@@ -13,6 +13,7 @@ http.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response && error.response.status) {
+      console.log(error.response);
       if (error.response.status === 401) {
         const currentUser: User = store.getters.AccountInfo;
 
@@ -31,156 +32,112 @@ http.interceptors.response.use(
           "Bearer " + currentResponseToken.accessToken;
         return await http.request(error.config);
       } else {
-        throw new Object(error);
+        throw new Error(error.response.data);
       }
     }
   }
 );
+http.interceptors.request.use((request) => {
+  if (request.headers) {
+    if (request.url !== "Account/GetToken") {
+      request.headers.Authorization = "Bearer " + store.getters.getToken;
+    }
+    request.headers["Content-Type"] = "application/json";
+  }
+
+  return request;
+});
 
 export const getTokenByUsernameAndPassword = async (
   username: string,
   password: string
 ) => {
-  try {
-    const { data } = await http({
-      url: "Account/GetToken",
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      data: {
-        username,
-        password,
-      },
-    });
-    const responseToken: IresponseToken = data;
-    const { accessToken, user } = responseToken;
-    const currentUser = new User(user);
-    const response = { accessToken, currentUser };
-    return response;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.log(error);
-    } else {
-      console.log(error);
-    }
-    throw error;
-  }
+  const { data } = await http({
+    url: "Account/GetToken",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: {
+      username,
+      password,
+    },
+  });
+  const responseToken: IresponseToken = data;
+  const { accessToken, user } = responseToken;
+  const currentUser = new User(user);
+  const response = { accessToken, currentUser };
+  return response;
 };
 
 export const AgencyGetAll = async () => {
-  try {
-    const { data } = await http({
-      url: "AgencyTypes",
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + store.getters.getToken,
-      },
-    });
-    const response: AgencyTypeResponse[] = data;
-    const res = response.map(
-      (AgencyResponse) => new AgencyType(AgencyResponse)
-    );
-    return res;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.log(error);
-    } else {
-      console.log(error);
-    }
-    throw error;
-  }
+  const { data } = await http({
+    url: "AgencyTypes",
+    method: "GET",
+  });
+  const response: AgencyTypeResponse[] = data;
+  const res = response.map((AgencyResponse) => new AgencyType(AgencyResponse));
+  return res;
 };
 
 export const AgencyTypeCreate = async (agencyType: AgencyType) => {
-  try {
-    const { data } = await http({
-      url: "AgencyTypes/Create",
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + store.getters.getToken,
-      },
-      data: {
-        Name: agencyType.name,
-        ShortName: agencyType.shortName,
-      },
-    });
-    const response: AgencyTypeResponse = data;
-    return new AgencyType(response);
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.log(error);
-    } else {
-      console.log(error);
-    }
-    throw error;
-  }
+  const { data } = await http({
+    url: "AgencyTypes/Create",
+    method: "POST",
+    data: {
+      Name: agencyType.name,
+      ShortName: agencyType.shortName,
+    },
+  });
+  const response: AgencyTypeResponse = data;
+  return new AgencyType(response);
+};
+export const AgencyTypeUpdate = async (agencyType: AgencyType) => {
+  const { data } = await http({
+    url: "AgencyTypes/Update",
+    method: "PUT",
+    data: {
+      Name: agencyType.name,
+      ShortName: agencyType.shortName,
+    },
+  });
+  const response: AgencyTypeResponse = data;
+  return new AgencyType(response);
+};
+export const AgencyTypeDelete = async (agencyType: AgencyType) => {
+  const { data } = await http({
+    url: "AgencyTypes/Delete",
+    method: "DELETE",
+    data: {
+      id: agencyType.id,
+    },
+  });
+  return data;
 };
 export const AgencyCreate = async (agencyVM: AgencyVM) => {
-  try {
-    const { data } = await http({
-      url: "Agencyes/Create",
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + store.getters.getToken,
-      },
-      data: agencyVM,
-    });
-    const response: AgencyVMResponse = data;
-    return new AgencyVM(response);
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.log(error);
-    } else {
-      console.log(error);
-    }
-    throw error;
-  }
+  const { data } = await http({
+    url: "Agencyes/Create",
+    method: "POST",
+    data: agencyVM,
+  });
+  const response: AgencyVMResponse = data;
+  return new AgencyVM(response);
 };
 export const AgencyUpdate = async (agencyVM: AgencyVM) => {
-  try {
-    const { data } = await http({
-      url: "Agencyes/Update",
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + store.getters.getToken,
-      },
-      data: agencyVM,
-    });
-    const response: AgencyVMResponse = data;
-    return new AgencyVM(response);
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.log(error);
-    } else {
-      console.log(error);
-    }
-    throw error;
-  }
+  const { data } = await http({
+    url: "Agencyes/Update",
+    method: "PUT",
+    data: agencyVM,
+  });
+  const response: AgencyVMResponse = data;
+  return new AgencyVM(response);
 };
 export const AgencyDelete = async (agencyVM: AgencyVM) => {
-  try {
-    const { data } = await http({
-      url: "Agencyes/Delete",
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + store.getters.getToken,
-      },
-      data: agencyVM,
-    });
-    const response: AgencyVMResponse = data;
-    return new AgencyVM(response);
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.log(error);
-    } else {
-      console.log(error);
-    }
-    throw error;
-  }
+  const { data } = await http({
+    url: "Agencyes/Delete",
+    method: "DELETE",
+    data: agencyVM,
+  });
+  const response: AgencyVMResponse = data;
+  return new AgencyVM(response);
 };
