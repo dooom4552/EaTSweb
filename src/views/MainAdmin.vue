@@ -6,6 +6,7 @@ import { mapGetters } from "vuex";
 import { AgencyGetAll } from "@/API/API";
 import { AgencyType } from "@/models/AgencyType";
 import { AgencyVM } from "@/models/AgencyVM";
+import { Item } from "@/models/Item";
 
 @Component({
   components: { AgencyList, AgencyTypeList },
@@ -17,44 +18,37 @@ import { AgencyVM } from "@/models/AgencyVM";
   },
 })
 export default class MainAdmin extends Vue {
-  items: any[] = [
-    { name: "Пользователи" },
-    { name: "Типы учреждений" },
-    { name: "Учреждения" },
-    { name: "Мероприятия" },
+  items: Item[] = [
+    { name: "Пользователи", loading: false, color: "cyan" },
+    { name: "Типы учреждений", loading: false, color: "cyan" },
+    { name: "Учреждения", loading: false, color: "cyan" },
+    { name: "Мероприятия", loading: false, color: "cyan" },
   ];
   tab: any = null;
   currentAgencyTypes: AgencyType[] = [];
   currentAgencyType: AgencyType = new AgencyType({
     id: 0,
-    name: "ggg",
-    shortName: "jj",
+    name: "",
+    shortName: "",
     agencies: [],
   });
-  btns: string[] = [
-    "Пользователи",
-    "Типы учреждений",
-    "Учреждения",
-    "Мероприятия",
-  ];
-  colors: string[] = ["cyan", "cyan", "cyan", "cyan"];
-  loading: boolean[] = [false, false, false, false];
 
   $notification: any;
   async created() {
     try {
-      this.loading[1] = true;
-      this.loading[2] = true;
+      this.items[1].loading = true;
+      this.items[2].loading = true;
       this.currentAgencyTypes = await AgencyGetAll();
       this.currentAgencyType = this.currentAgencyTypes[0];
     } catch (error) {
+      console.log(error);
       this.$notification.error(error, {
-        timer: 4,
+        timer: 20,
         position: "bottomRight",
       });
     } finally {
-      this.loading[1] = false;
-      this.loading[2] = false;
+      this.items[1].loading = false;
+      this.items[2].loading = false;
     }
   }
   setCurrentAgencyType(agencyType: AgencyType) {
@@ -112,21 +106,21 @@ export default class MainAdmin extends Vue {
           <v-col>
             <v-toolbar-title>Админ панель</v-toolbar-title>
           </v-col>
-          <v-menu v-for="(nameBtn, index) in btns" :key="index" offset-y>
+          <v-menu v-for="(Btn, index) in items" :key="index" offset-y>
             <template v-slot:activator="{ attrs, on }">
               <v-btn
                 @click="setTab(index)"
-                :loading="loading[index]"
-                :color="colors[index]"
+                :loading="items[index].loading"
+                :color="items[index].color"
                 class="white--text ma-5"
                 :attrs="attrs"
                 v-on="on"
               >
-                {{ nameBtn }}
+                {{ Btn.name }}
               </v-btn>
             </template>
 
-            <v-list v-if="nameBtn === 'Учреждения'">
+            <v-list v-if="Btn.name === 'Учреждения'">
               <v-list-item
                 v-for="(agencyType, index) in currentAgencyTypes"
                 :key="index"

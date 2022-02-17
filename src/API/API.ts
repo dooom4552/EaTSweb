@@ -32,7 +32,13 @@ http.interceptors.response.use(
           "Bearer " + currentResponseToken.accessToken;
         return await http.request(error.config);
       } else {
-        throw new Error(error.response.data);
+        if (axios.isAxiosError(error)) {
+          throw new Error(
+            `Статус:${error.response.status} ${error.response.request.responseURL}`
+          );
+        } else {
+          throw error;
+        }
       }
     }
   }
@@ -108,7 +114,7 @@ export const AgencyTypeDelete = async (agencyType: AgencyType) => {
   const { data } = await http({
     url: "AgencyTypes/Delete",
     method: "DELETE",
-    data: {
+    params: {
       id: agencyType.id,
     },
   });

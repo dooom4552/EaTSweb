@@ -31,6 +31,7 @@ export default class AgencyTypeList extends Vue {
       this.AgencyTypeName = "";
       this.AgencyTypeShortName = "";
     } catch (error) {
+      console.log(error);
       this.$notification.error(error, {
         timer: 10,
         position: "bottomRight",
@@ -66,7 +67,7 @@ export default class AgencyTypeList extends Vue {
       this.currentAgencyType = agencyType;
       this.dialogUdate = true;
       this.AgencyTypeShortName = agencyType.shortName;
-      this.AgencyTypeShortName = agencyType.name;
+      this.AgencyTypeName = agencyType.name;
     } catch (error) {
       this.$notification.error(error, {
         timer: 10,
@@ -86,6 +87,16 @@ export default class AgencyTypeList extends Vue {
         position: "bottomRight",
       });
     }
+  }
+  closeDialogUdate() {
+    this.dialogUdate = false;
+    this.AgencyTypeName = "";
+    this.AgencyTypeShortName = "";
+  }
+  closeDialog() {
+    this.dialog = false;
+    this.AgencyTypeName = "";
+    this.AgencyTypeShortName = "";
   }
 }
 </script>
@@ -127,7 +138,7 @@ export default class AgencyTypeList extends Vue {
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="dialog = false">
+              <v-btn color="blue darken-1" text @click="closeDialog">
                 Закрыть
               </v-btn>
               <v-btn
@@ -172,7 +183,7 @@ export default class AgencyTypeList extends Vue {
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="dialogUdate = false">
+              <v-btn color="blue darken-1" text @click="closeDialogUdate">
                 Закрыть
               </v-btn>
               <v-btn

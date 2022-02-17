@@ -91,6 +91,16 @@ export default class AgencyList extends Vue {
       });
     }
   }
+  closeDialogUdate() {
+    this.dialogUdate = false;
+    this.AgencyName = "";
+    this.AgencyShortName = "";
+  }
+  closeDialog() {
+    this.dialog = false;
+    this.AgencyName = "";
+    this.AgencyShortName = "";
+  }
 }
 </script>
 <template>
@@ -134,7 +144,7 @@ export default class AgencyList extends Vue {
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="dialog = false">
+              <v-btn color="blue darken-1" text @click="closeDialog">
                 Закрыть
               </v-btn>
               <v-btn
@@ -177,7 +187,7 @@ export default class AgencyList extends Vue {
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="dialogUdate = false">
+              <v-btn color="blue darken-1" text @click="closeDialogUdate">
                 Закрыть
               </v-btn>
               <v-btn
