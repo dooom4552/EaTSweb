@@ -4,6 +4,8 @@ import { IresponseToken } from "@/models/interfaces/IresponseToken";
 import { User } from "@/models/User";
 import axios from "axios";
 import store from "@/store";
+import { getLocalStorage } from "@/service/localStorageService";
+import { UserVM } from "@/models/UserVM";
 
 const http = axios.create({
   baseURL: "https://localhost:7035",
@@ -15,7 +17,8 @@ http.interceptors.response.use(
     if (error.response && error.response.status) {
       console.log(error.response);
       if (error.response.status === 401) {
-        const currentUser: User = store.getters.AccountInfo;
+        const currentUser: User =
+          store.getters.AccountInfo || getLocalStorage("currentUser");
 
         const currentResponseToken: { accessToken: string; currentUser: User } =
           await getTokenByUsernameAndPassword(
@@ -34,7 +37,7 @@ http.interceptors.response.use(
       } else {
         if (axios.isAxiosError(error)) {
           throw new Error(
-            `Статус:${error.response.status} ${error.response.request.responseURL}`
+            `Статус:${error.response.status} ${error.response.request.responseURL} ${error.response.data}`
           );
         } else {
           throw error;
@@ -44,8 +47,12 @@ http.interceptors.response.use(
   }
 );
 http.interceptors.request.use((request) => {
-  if (request.headers) {
-    if (request.url !== "Account/GetToken") {
+  if (request.headers && request.url) {
+    if (
+      !["Account/Create", "Account/GetToken"].some(
+        (item) => item === request.url
+      )
+    ) {
       request.headers.Authorization = "Bearer " + store.getters.getToken;
     }
     request.headers["Content-Type"] = "application/json";
@@ -74,6 +81,51 @@ export const getTokenByUsernameAndPassword = async (
   const currentUser = new User(user);
   const response = { accessToken, currentUser };
   return response;
+};
+export const getAgensyByRegister = async (id?: number) => {
+  const { data } = await http({
+    url: "Agency/Get",
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    params: {
+      id,
+    },
+  });
+  const responseToken: AgencyVMResponse[] = data;
+  console.log(responseToken);
+  return responseToken;
+};
+export const getUser = async (id?: number) => {
+  const { data } = await http({
+    url: "Account/Get",
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    params: {
+      id,
+    },
+  });
+  const responseToken: User[] = data;
+  console.log(responseToken);
+  return responseToken;
+};
+
+// eslint-disable-next-line no-unused-vars
+export const UserCreate = async (userVM: UserVM) => {
+  const { data } = await http({
+    url: "Account/Create",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: userVM,
+  });
+  const responseToken: User = data;
+  console.log(responseToken);
+  return responseToken;
 };
 
 export const AgencyGetAll = async () => {

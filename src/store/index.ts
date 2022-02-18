@@ -1,3 +1,4 @@
+import { getLocalStorage } from "@/service/localStorageService";
 import Vue from "vue";
 import Vuex from "vuex";
 import { getTokenByUsernameAndPassword } from "../API/API";
@@ -54,9 +55,4 @@ export default store;
 
 function saveState(key: string, value: any) {
   window.localStorage.setItem(key, JSON.stringify(value));
-}
-function getLocalStorage(key: string) {
-  const result = window.localStorage.getItem(key);
-
-  return result ? JSON.parse(result) : null;
 }

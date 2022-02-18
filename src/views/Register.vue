@@ -1,57 +1,138 @@
 <script lang="ts">
 //import router from "@/router";
-import { User } from "@/models/User";
+import { getAgensyByRegister, UserCreate } from "@/API/API";
+import { AgencyVMResponse } from "@/models/AgencyVM";
+import { UserVM } from "@/models/UserVM";
 import Vue from "vue";
 import Component from "vue-class-component";
-//import { getTokenByUsernameAndPassword } from "../API/API";
 
 @Component({})
 export default class Register extends Vue {
+  valid: boolean = true;
+  name: string = "";
   login: string = "";
+  email: string = "";
+  agencyId: number = 0;
+  agencyes: AgencyVMResponse[] = [];
   password: string = "";
-
-  async getToken() {
-    const payload = {
-      login: this.login,
-      password: this.password,
-    };
-    const user = (await this.$store.dispatch("initUser", payload)) as User;
-    if (user) {
+  phone: string = "";
+  show: boolean = false;
+  $notification: any;
+  get validForm() {
+    return (
+      this.name &&
+      this.login &&
+      this.email &&
+      this.agencyId &&
+      this.password &&
+      this.phone
+    );
+  }
+  async created() {
+    try {
+      this.agencyes = await getAgensyByRegister();
+      this.agencyId = this.agencyes[0].id;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  async userCreate() {
+    try {
+      const userVM: UserVM = {
+        name: this.name,
+        login: this.login,
+        password: this.password,
+        phone: this.phone,
+        email: this.email,
+        agencyId: this.agencyId,
+      };
+      console.log(userVM);
+      await UserCreate(userVM);
+      const payload = {
+        login: this.login,
+        password: this.password,
+      };
+      await this.$store.dispatch("initUser", payload);
       this.$router.push("/");
+    } catch (error) {
+      this.name = "";
+      this.login = "";
+      this.password = "";
+      this.phone = "";
+      this.email = "";
+      this.agencyId = 0;
+      console.log(error);
+      this.$notification.error(error, {
+        timer: 10,
+        position: "bottomRight",
+      });
     }
   }
 }
 </script>
-
 <template>
-  <div class="wrapper">
-    <div class="login-box">
-      <v-form ref="form">
-        <v-text-field v-model="login" label="Login" required></v-text-field>
-
+  <div class="wrapper-register">
+    <div class="box-register-content">
+      <v-form ref="form" v-model="valid" lazy-validation>
         <v-text-field
-          type="password"
-          v-model="password"
-          label="Password"
+          v-model="name"
+          :counter="10"
+          label="Имя"
           required
         ></v-text-field>
-
-        <v-btn block color="primary" @click="getToken"> Login </v-btn>
+        <v-select
+          v-model="agencyId"
+          :items="agencyes"
+          :item-text="'shortName'"
+          :item-value="'id'"
+          label="Учреждения"
+          required
+        ></v-select>
+        <v-text-field
+          v-model="login"
+          :counter="10"
+          label="Логин"
+          required
+        ></v-text-field>
+        <v-text-field
+          v-model="password"
+          :append-icon="show ? 'mdi-eye' : 'mdi-eye-off'"
+          :type="show ? 'text' : 'password'"
+          name="input-10-1"
+          label="Normal with hint text"
+          hint="At least 8 characters"
+          counter
+          @click:append="show = !show"
+        ></v-text-field>
+        <v-text-field
+          v-model="phone"
+          :counter="11"
+          label="Телефон"
+          required
+        ></v-text-field>
+        <v-text-field v-model="email" label="E-mail" required></v-text-field>
+        <v-btn
+          color="success"
+          class="mr-4"
+          :disabled="!validForm"
+          @click="userCreate"
+        >
+          Зарегистрироватся
+        </v-btn>
       </v-form>
     </div>
   </div>
 </template>
-
 <style lang="scss" scoped>
-.wrapper {
-  height: calc(100vh - 20px);
-  width: 100%;
+.wrapper-register {
   display: flex;
-  align-items: center;
+  height: 100%;
+  width: 100%;
   justify-content: center;
-  .login-box {
-    height: 200px;
-    width: 200px;
+  align-items: center;
+
+  .box-register-content {
+    width: 400px;
   }
 }
 </style>

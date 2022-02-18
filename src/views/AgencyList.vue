@@ -35,7 +35,7 @@ export default class AgencyList extends Vue {
       this.AgencyShortName = "";
     } catch (error) {
       this.$notification.error(error, {
-        timer: 4,
+        timer: 10,
         position: "bottomRight",
       });
     }

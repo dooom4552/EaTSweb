@@ -2,6 +2,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import AgencyList from "./AgencyList.vue";
 import AgencyTypeList from "../components/admin/AgencyTypeList.vue";
+import UsersList from "../components/admin/UsersList.vue";
 import { mapGetters } from "vuex";
 import { AgencyGetAll } from "@/API/API";
 import { AgencyType } from "@/models/AgencyType";
@@ -9,7 +10,7 @@ import { AgencyVM } from "@/models/AgencyVM";
 import { Item } from "@/models/Item";
 
 @Component({
-  components: { AgencyList, AgencyTypeList },
+  components: { AgencyList, AgencyTypeList, UsersList },
   computed: {
     ...mapGetters([
       "AccountInfo",
@@ -145,9 +146,9 @@ export default class MainAdmin extends Vue {
         <v-tabs-items v-model="tab">
           <v-tab-item v-for="(item, index) in items" :key="index">
             <v-card flat>
-              <v-card v-if="item.name === 'Пользователи'">{{
-                item.name
-              }}</v-card>
+              <v-card v-if="item.name === 'Пользователи'">
+                <UsersList />
+              </v-card>
               <v-card v-else-if="item.name === 'Типы учреждений'">
                 <AgencyTypeList
                   :currentAgencyTypes="currentAgencyTypes"

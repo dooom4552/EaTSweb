@@ -15,6 +15,12 @@ const routes: Array<RouteConfig> = [
     component: WrapperMain,
   },
   {
+    path: "/login",
+    name: "Login",
+
+    component: () => import("../views/Login.vue"),
+  },
+  {
     path: "/register",
     name: "Register",
 
@@ -26,7 +32,7 @@ const routes: Array<RouteConfig> = [
     meta: { authRequired: true },
     beforeEnter: (to: any, from: any, next: any) => {
       store.dispatch("logOut").then(() => {
-        next({ name: "Register" });
+        next({ name: "Login" });
       });
     },
   },
@@ -49,7 +55,7 @@ router.beforeEach((routeTo, routeFrom, next) => {
     if (window.localStorage.getItem("token")) {
       return next();
     } else {
-      next({ name: "Register" });
+      next({ name: "Login" });
     }
   }
 });
