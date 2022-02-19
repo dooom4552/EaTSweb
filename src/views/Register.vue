@@ -46,12 +46,15 @@ export default class Register extends Vue {
         email: this.email,
         agencyId: this.agencyId,
       };
-      console.log(userVM);
       await UserCreate(userVM);
       const payload = {
         login: this.login,
         password: this.password,
       };
+      this.$notification.success("Вы зарегистрированы", {
+        timer: 10,
+        position: "bottomRight",
+      });
       await this.$store.dispatch("initUser", payload);
       this.$router.push("/");
     } catch (error) {
@@ -66,6 +69,32 @@ export default class Register extends Vue {
         timer: 10,
         position: "bottomRight",
       });
+    }
+  }
+  async usersCreate() {
+    for (let index = 0; index < 100; index++) {
+      try {
+        const userVM: UserVM = {
+          name: `Userr${index}`,
+          login: `Userr${index}`,
+          password: `${index}`,
+          phone: `444${index}`,
+          email: `userr${index}@mail.ru`,
+          agencyId: this.agencyId,
+        };
+        await UserCreate(userVM);
+        this.$notification.success(`Вы Userr${index} зарегистрированы`, {
+          timer: 10,
+          position: "bottomRight",
+        });
+      } catch (error) {
+        console.log(error);
+        this.$notification.error(error, {
+          timer: 10,
+          position: "bottomRight",
+        });
+        break;
+      }
     }
   }
 }
@@ -118,6 +147,9 @@ export default class Register extends Vue {
           @click="userCreate"
         >
           Зарегистрироватся
+        </v-btn>
+        <v-btn color="success" class="mr-4" @click="usersCreate">
+          Добавить кучу пользователей
         </v-btn>
       </v-form>
     </div>

@@ -109,7 +109,6 @@ export const getUser = async (id?: number) => {
     },
   });
   const responseToken: User[] = data;
-  console.log(responseToken);
   return responseToken;
 };
 
