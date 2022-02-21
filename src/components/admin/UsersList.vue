@@ -1,5 +1,5 @@
 <script>
-import { getUser } from "../../API/API";
+import { getUser, UpdateAdminData } from "../../API/API";
 
 export default {
   name: "tutorials-list",
@@ -9,19 +9,24 @@ export default {
       users: [],
       tutorials: [],
       headers: [
-        { text: "Логин", align: "start", sortable: false, value: "login" },
-        { text: "Имя", align: "start", sortable: false, value: "name" },
-        { text: "Электронная почта", value: "email", sortable: false },
-        { text: "Телефон", value: "phone", sortable: false },
-        { text: "Статус", value: "isActive", sortable: false },
-        { text: "Учреждение", value: "agency", sortable: false },
+        { text: "Логин", align: "start", sortable: true, value: "login" },
+        { text: "Имя", align: "start", sortable: true, value: "name" },
+        { text: "Электронная почта", value: "email", sortable: true },
+        { text: "Телефон", value: "phone", sortable: true },
+        { text: "Статус", value: "isActive", sortable: true },
+        { text: "Роль", value: "role", sortable: true },
+        { text: "Учреждение", value: "agency", sortable: true },
         { text: "Действия", value: "actions", sortable: false },
       ],
       page: 1,
       totalPages: 10,
       pageSize: 10,
-      pageSizes: [3, 6, 9],
+      pageSizes: [3, 6, 9, 20],
       searchTitle: "",
+      dialog: false,
+      dialogUdate: false,
+      currentUser: null,
+      roles: [0, 1, 2],
     };
   },
   async mounted() {
@@ -104,7 +109,38 @@ export default {
       console.log(id);
     },
     editUser(user) {
-      console.log(user);
+      this.currentUser = user;
+      this.dialogUdate = true;
+    },
+    getNameRole(index) {
+      switch (index) {
+        case 0:
+          return "Администратор";
+        case 1:
+          return "Куратор";
+        case 2:
+          return "Пользователь";
+        default:
+          break;
+      }
+    },
+    async updateUser(user) {
+      try {
+        this.dialogUdate = false;
+        user.isActive = !user.isActive;
+        const resultUser = await UpdateAdminData(user);
+        user.isActive = resultUser.isActive;
+        user.role = resultUser.role;
+        this.$notification.success(`Пользователь ${resultUser.name} изменен`, {
+          timer: 10,
+          position: "bottomRight",
+        });
+      } catch (error) {
+        this.$notification.error(error, {
+          timer: 10,
+          position: "bottomRight",
+        });
+      }
     },
   },
 };
@@ -112,6 +148,36 @@ export default {
 
 <template>
   <v-row v-if="fakeAllUsers" align="center" class="list px-3 mx-auto">
+    <v-dialog v-if="currentUser" v-model="dialogUdate" max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">Изменение {{ currentUser.name }}</span>
+        </v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <v-radio-group v-model="currentUser.role">
+                  <v-radio
+                    v-for="(role, index) in roles"
+                    :key="index"
+                    :label="`Роль: ${getNameRole(role)}`"
+                    :value="role"
+                  ></v-radio>
+                </v-radio-group>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="cyan darken-1" text @click="updateUser(currentUser)">
+            <span v-if="!currentUser.isActive">Активировать</span>
+            <span v-else>Заблокировать</span>
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-col cols="12" sm="8">
       <v-text-field
         v-model="searchTitle"
@@ -162,6 +228,13 @@ export default {
           disable-pagination
           :hide-default-footer="true"
         >
+          <template v-slot:[`item.role`]="{ item }">
+            <span v-if="item.role === UserRole.Administrator"
+              >Администратор</span
+            >
+            <span v-if="item.role === UserRole.Curator">Куратор</span>
+            <span v-if="item.role === UserRole.User">Пользователь</span>
+          </template>
           <template v-slot:[`item.isActive`]="{ item }">
             {{ item.isActive ? "активен" : "не активен" }}
           </template>

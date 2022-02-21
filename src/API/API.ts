@@ -68,9 +68,7 @@ export const getTokenByUsernameAndPassword = async (
   const { data } = await http({
     url: "Account/GetToken",
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+
     data: {
       username,
       password,
@@ -86,9 +84,6 @@ export const getAgensyByRegister = async (id?: number) => {
   const { data } = await http({
     url: "Agency/Get",
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
     params: {
       id,
     },
@@ -101,9 +96,6 @@ export const getUser = async (id?: number) => {
   const { data } = await http({
     url: "Account/Get",
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
     params: {
       id,
     },
@@ -112,18 +104,22 @@ export const getUser = async (id?: number) => {
   return responseToken;
 };
 
-// eslint-disable-next-line no-unused-vars
 export const UserCreate = async (userVM: UserVM) => {
   const { data } = await http({
     url: "Account/Create",
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
     data: userVM,
   });
   const responseToken: User = data;
-  console.log(responseToken);
+  return responseToken;
+};
+export const UpdateAdminData = async (userVM: UserVM) => {
+  const { data } = await http({
+    url: "Account/UpdateStatusOrRole",
+    method: "PUT",
+    data: userVM,
+  });
+  const responseToken: User = data;
   return responseToken;
 };
 
