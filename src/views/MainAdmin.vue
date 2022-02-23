@@ -3,6 +3,7 @@ import { Component, Vue } from "vue-property-decorator";
 import AgencyList from "./AgencyList.vue";
 import AgencyTypeList from "../components/admin/AgencyTypeList.vue";
 import UsersList from "../components/admin/UsersList.vue";
+import SettingsUser from "../components/navPanel/SettingsUser.vue";
 import { mapGetters } from "vuex";
 import { AgencyGetAll } from "@/API/API";
 import { AgencyType } from "@/models/AgencyType";
@@ -10,7 +11,7 @@ import { AgencyVM } from "@/models/AgencyVM";
 import { Item } from "@/models/Item";
 
 @Component({
-  components: { AgencyList, AgencyTypeList, UsersList },
+  components: { AgencyList, AgencyTypeList, UsersList, SettingsUser },
   computed: {
     ...mapGetters([
       "AccountInfo",
@@ -98,10 +99,10 @@ export default class MainAdmin extends Vue {
     <v-app id="inspire">
       <v-card>
         <v-toolbar color="cyan" dark flat>
-          <v-app-bar-nav-icon></v-app-bar-nav-icon>
+          <SettingsUser />
           <v-col class="hidden-xs-only" sm="1" md="1">
             <v-avatar color="primary" size="56">{{
-              AccountInfo.login
+              AccountInfo.login[0]
             }}</v-avatar>
           </v-col>
           <v-col>

@@ -1,4 +1,5 @@
 export interface UserVM {
+  id?: number;
   name: string | null;
   login: string | null;
   password: string | null;

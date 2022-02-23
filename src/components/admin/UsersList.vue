@@ -102,6 +102,10 @@ export default {
           curentUsers,
         };
       } catch (error) {
+        this.$notification.error(error, {
+          timer: 10,
+          position: "bottomRight",
+        });
         console.log(error);
       }
     },

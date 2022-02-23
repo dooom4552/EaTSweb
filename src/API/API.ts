@@ -122,6 +122,15 @@ export const UpdateAdminData = async (userVM: UserVM) => {
   const responseToken: User = data;
   return responseToken;
 };
+export const UserUpdate = async (userVM: UserVM) => {
+  const { data } = await http({
+    url: "Account/Update",
+    method: "PUT",
+    data: userVM,
+  });
+  const responseToken: User = data;
+  return responseToken;
+};
 
 export const AgencyGetAll = async () => {
   const { data } = await http({
