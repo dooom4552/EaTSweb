@@ -6,6 +6,7 @@ import axios from "axios";
 import store from "@/store";
 import { getLocalStorage } from "@/service/localStorageService";
 import { UserVM } from "@/models/UserVM";
+import { EquipmentType } from "@/models/Equipment/EquipmentType";
 
 const http = axios.create({
   baseURL: "https://localhost:7035",
@@ -202,4 +203,43 @@ export const AgencyDelete = async (agencyVM: AgencyVM) => {
   });
   const response: AgencyVMResponse = data;
   return new AgencyVM(response);
+};
+
+export const GetEquipmentTypes = async (id?: number) => {
+  const { data } = await http({
+    url: "EquipmentTypes/Get",
+    method: "GET",
+    params: {
+      id,
+    },
+  });
+  const response: EquipmentType[] = data;
+  return response;
+};
+export const CreateEquipmentType = async (type: EquipmentType) => {
+  const { data } = await http({
+    url: "EquipmentTypes/Create",
+    method: "POST",
+    data: type,
+  });
+  const response: EquipmentType = data;
+  return response;
+};
+export const EditEquipmentType = async (type: EquipmentType) => {
+  const { data } = await http({
+    url: "EquipmentTypes/Update",
+    method: "PUT",
+    data: type,
+  });
+  const response: EquipmentType = data;
+  return response;
+};
+export const DeleteEquipmentType = async (id: number) => {
+  const { data } = await http({
+    url: "EquipmentTypes/Delete",
+    method: "DELETE",
+    params: { id },
+  });
+  const response: string = data;
+  return response;
 };

@@ -2,6 +2,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import AgencyList from "./AgencyList.vue";
 import AgencyTypeList from "../components/admin/AgencyTypeList.vue";
+import EquipmentTypeList from "../components/admin/EquipmentTypeList.vue";
 import UsersList from "../components/admin/UsersList.vue";
 import SettingsUser from "../components/navPanel/SettingsUser.vue";
 import { mapGetters } from "vuex";
@@ -11,7 +12,13 @@ import { AgencyVM } from "@/models/AgencyVM";
 import { Item } from "@/models/Item";
 
 @Component({
-  components: { AgencyList, AgencyTypeList, UsersList, SettingsUser },
+  components: {
+    AgencyList,
+    AgencyTypeList,
+    UsersList,
+    SettingsUser,
+    EquipmentTypeList,
+  },
   computed: {
     ...mapGetters([
       "AccountInfo",
@@ -25,6 +32,7 @@ export default class MainAdmin extends Vue {
     { name: "Типы учреждений", loading: false, color: "cyan" },
     { name: "Учреждения", loading: false, color: "cyan" },
     { name: "Мероприятия", loading: false, color: "cyan" },
+    { name: "Тип оборудования", loading: false, color: "cyan" },
   ];
   tab: any = null;
   currentAgencyTypes: AgencyType[] = [];
@@ -170,6 +178,9 @@ export default class MainAdmin extends Vue {
               <v-card v-else-if="item.name === 'Мероприятия'">{{
                 item.name
               }}</v-card>
+              <v-card v-else-if="item.name === 'Тип оборудования'">
+                <EquipmentTypeList />
+              </v-card>
             </v-card>
           </v-tab-item>
         </v-tabs-items>
