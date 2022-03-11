@@ -7,6 +7,8 @@ import store from "@/store";
 import { getLocalStorage } from "@/service/localStorageService";
 import { UserVM } from "@/models/UserVM";
 import { EquipmentType } from "@/models/Equipment/EquipmentType";
+import { EquipmentClassVM } from "@/models/Equipment/EquipmentClassVM";
+import { EquipmentClass } from "@/models/Equipment/equipmentClass";
 
 const http = axios.create({
   baseURL: "https://localhost:7035",
@@ -241,5 +243,16 @@ export const DeleteEquipmentType = async (id: number) => {
     params: { id },
   });
   const response: string = data;
+  return response;
+};
+export const CreateEquipmentClass = async (
+  equipmentClassVM: EquipmentClassVM
+) => {
+  const { data } = await http({
+    url: "EquipmentClasses/Create",
+    method: "POST",
+    data: equipmentClassVM,
+  });
+  const response: EquipmentClass = data;
   return response;
 };

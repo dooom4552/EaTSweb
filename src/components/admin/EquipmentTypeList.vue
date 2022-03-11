@@ -1,10 +1,12 @@
 <script lang="ts">
 import {
+  CreateEquipmentClass,
   CreateEquipmentType,
   DeleteEquipmentType,
   EditEquipmentType,
   GetEquipmentTypes,
 } from "@/API/API";
+import { EquipmentClassVM } from "@/models/Equipment/EquipmentClassVM";
 import { EquipmentType } from "@/models/Equipment/EquipmentType";
 import { Component, Vue } from "vue-property-decorator";
 import EquipmentKindVue from "./EquipmentKind.vue";
@@ -20,9 +22,11 @@ export default class EquipmentTypeList extends Vue {
   createEquipmentTypeDialog: boolean = false;
   editEquipmentTypeDialog: boolean = false;
   deleteEquipmentTypeDialog: boolean = false;
+  createEquipmentClassDialog: boolean = false;
   currentDeleteIdEquipmentType: number | null = null;
   createEquipmentTypeName: string = "";
   currentEquipmentType: EquipmentType | null = null;
+  currentEquipmentClassVM: EquipmentClassVM | null = null;
   $notification: any;
 
   async created() {
@@ -77,6 +81,33 @@ export default class EquipmentTypeList extends Vue {
       });
     } finally {
       this.deleteEquipmentTypeDialog = false;
+    }
+  }
+  showCreateEquipmentClassDialog(currentEquipmentType: EquipmentType) {
+    if (!currentEquipmentType.id) return;
+    this.currentEquipmentType = currentEquipmentType;
+    this.currentEquipmentClassVM = {
+      equipmentTypeId: currentEquipmentType.id,
+      fullName: "",
+      shortName: "",
+      isRepair: false,
+    };
+    this.createEquipmentClassDialog = true;
+  }
+  async createEquipmentClass() {
+    try {
+      if (!this.currentEquipmentClassVM) return;
+      const resultEquipmentClass = await CreateEquipmentClass(
+        this.currentEquipmentClassVM
+      );
+      this.currentEquipmentType?.classes?.push(resultEquipmentClass);
+    } catch (error) {
+      this.$notification.error(error, {
+        timer: 4,
+        position: "bottomRight",
+      });
+    } finally {
+      this.createEquipmentClassDialog = false;
     }
   }
 }
@@ -160,7 +191,39 @@ export default class EquipmentTypeList extends Vue {
         </v-card-actions>
       </v-card>
     </v-dialog>
-
+    <v-dialog
+      v-if="currentEquipmentClassVM"
+      v-model="createEquipmentClassDialog"
+      width="500"
+    >
+      <v-card>
+        <v-card-title class="text-h5 grey lighten-2">
+          Добавление класса оборудования
+        </v-card-title>
+        <v-text-field
+          v-model="currentEquipmentClassVM.fullName"
+          label="Полное название*"
+          type="text"
+          required
+        ></v-text-field>
+        <v-text-field
+          v-model="currentEquipmentClassVM.shortName"
+          label="Короткое название*"
+          type="text"
+          required
+        ></v-text-field>
+        <v-switch
+          v-model="currentEquipmentClassVM.isRepair"
+          :label="`Подлежит ремонту`"
+        ></v-switch>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" text @click="createEquipmentClass">
+            Добавить
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-btn @click="createEquipmentTypeDialog = true"
       >Добавить тип оборудования</v-btn
     >
@@ -173,7 +236,12 @@ export default class EquipmentTypeList extends Vue {
           {{ equipmentType.name }}
           <template v-slot:actions>
             <v-icon class="mr-3"> $expand</v-icon>
-            <v-btn class="mr-3"> Добавить класс оборудования </v-btn>
+            <v-btn
+              class="mr-3"
+              @click="showCreateEquipmentClassDialog(equipmentType)"
+            >
+              Добавить класс оборудования
+            </v-btn>
             <v-btn
               class="mr-3"
               color="primary"
